@@ -1,0 +1,98 @@
+import pandas as pd
+import numpy as np
+
+# 1. Create a DataFrame from dictionary with mixed data types
+data = {
+    'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
+    'Age': [25, 30, np.nan, 35, 28],
+    'City': ['New York', 'Los Angeles', 'Chicago', np.nan, 'Miami'],
+    'Salary': [70000, 80000, 65000, 90000, np.nan],
+    'JoiningDate': pd.to_datetime([
+        '2018-01-10', '2019-03-15', '2017-06-23', '2020-11-01', '2019-07-07'
+    ]),
+    'Department': ['HR', 'Finance', 'Finance', 'IT', 'HR']
+}
+df = pd.DataFrame(data)
+
+print("Original DataFrame:")
+print(df)
+
+# 2. Inspecting the DataFrame
+print("\nDataFrame Info:")
+print(df.info())
+
+print("\nStatistical Summary:")
+print(df.describe())
+
+print("\nFirst 3 rows:")
+print(df.head(3))
+
+# 3. Handling missing data
+print("\nRows with missing values:")
+print(df[df.isnull().any(axis=1)])
+
+print("\nFill missing Age with mean age:")
+df['Age'].fillna(df['Age'].mean(), inplace=True)
+
+print("\nDrop rows where Salary is missing:")
+df_clean = df.dropna(subset=['Salary'])
+
+# 4. Filtering and conditional selection
+print("\nEmployees with Salary > 70000:")
+print(df_clean[df_clean['Salary'] > 70000])
+
+# 5. Creating new columns
+df['SalaryInThousands'] = df['Salary'] / 1000
+df['ExperienceYears'] = (pd.Timestamp('2025-06-17') - df['JoiningDate']).dt.days // 365
+
+print("\nDataFrame with new columns:")
+print(df)
+
+# 6. Grouping and aggregation
+grouped = df.groupby('Department').agg({
+    'Salary': ['mean', 'max'],
+    'Age': 'median'
+})
+print("\nGrouped by Department:")
+print(grouped)
+
+# 7. Sorting
+print("\nSorted by Salary descending:")
+print(df.sort_values(by='Salary', ascending=False))
+
+# 8. Applying functions
+print("\nApplying a custom function to Age (increase by 1):")
+df['AgePlusOne'] = df['Age'].apply(lambda x: x + 1)
+print(df[['Name', 'Age', 'AgePlusOne']])
+
+# 9. Pivot table
+pivot = pd.pivot_table(df, values='Salary', index='Department', columns='City', aggfunc='mean')
+print("\nPivot Table - Average Salary by Department and City:")
+print(pivot)
+
+# 10. Merge example
+other = pd.DataFrame({
+    'Department': ['HR', 'Finance', 'IT'],
+    'Manager': ['John', 'Sara', 'Michael']
+})
+merged = pd.merge(df, other, on='Department', how='left')
+print("\nMerged DataFrame with Manager info:")
+print(merged)
+
+# 11. Time series resampling example
+ts_data = pd.Series(np.random.randn(100), 
+                    index=pd.date_range('2024-01-01', periods=100))
+print("\nOriginal Time Series Data:")
+print(ts_data.head())
+
+print("\nResampled Monthly Mean:")
+print(ts_data.resample('M').mean())
+
+# 12. Export to CSV
+df.to_csv('employees.csv', index=False)
+print("\nDataFrame exported to employees.csv")
+
+# 13. Reading CSV back (example)
+df_loaded = pd.read_csv('employees.csv')
+print("\nLoaded DataFrame from CSV:")
+print(df_loaded.head())
